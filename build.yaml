@@ -1,0 +1,12 @@
+builders:
+  resource_id:
+    import: "package:resource_id/build_runner/build_runner_builder.dart"
+    builder_factories: ["resourceId"]
+    auto_apply: dependents
+    build_extensions:
+      .txt: [".dart"]
+    applies_builders:
+      - resource_id|
+    defaults:
+      release_options:
+        outputStyle: compressed
