@@ -1,7 +1,9 @@
+import 'dart:io';
+
+import 'package:resource_id/helpers/file_helpers.dart';
 import 'package:resource_id/helpers/string_helpers.dart';
 import 'package:resource_id/models/flutter_model.dart';
 import 'package:yaml/yaml.dart';
-import 'dart:io';
 
 class ResourceId {
   static Future<void> run() async {
@@ -21,7 +23,7 @@ class ResourceId {
     return FlutterModel.fromYamlMap(yamlMap);
   }
 
-  String bufferedWriter;
+  StringBuffer stringBuffer;
 
   File build;
   List<String> createdClass = [];
@@ -33,11 +35,12 @@ class ResourceId {
       print("File or folder with directory " + asset + " doesn't exist");
       return;
     }
-    if (!file.isDirectory()) {
+    if (!FileHelpers.isDirectory(file)) {
       print("path " + asset + " is file which is not support yet");
       return;
     }
-    String assetParent = StringHelpers.replaceLast(asset, "/" + file.name, "");
+    String assetParent =
+    StringHelpers.replaceLast(asset, "/" + FileHelpers.getName(file), "");
     File parentFile = Files.fromPath(assetParent);
     _createDefaultRes(parentFile, file);
   }
@@ -46,14 +49,14 @@ class ResourceId {
     bool createResult = _createBuildFile();
     if (!createResult) return;
     File rootFile = Files.fromPath("assets");
-    List<File> files = rootFile.listFiles();
+    List<File> files = FileHelpers.listFiles(rootFile);
     if (files == null) {
       print("there is not assets folder");
       return;
     }
-    files.sort((File a, File b) => a.name.compareTo(b.name));
+    files.sort(FileHelpers.compare);
     for (File file in files) {
-      if (file.isDirectory()) {
+      if (FileHelpers.isDirectory(file)) {
         _checkFolders(rootFile, file);
       }
     }
@@ -68,7 +71,7 @@ class ResourceId {
     }
     try {
       build.createSync();
-      bufferedWriter = "";
+      stringBuffer = new StringBuffer();
     } catch (e) {
       print("BUILDER ERROR:Can't create build file\n" + e.getMessage());
       return false;
@@ -146,29 +149,24 @@ class ResourceId {
 
   void _createDefaultRes(File rootFile, File folder) {
     try {
-      String className = "_" + folder.classNameFromFolder;
+      String className = "_" + FileHelpers.getClassNameFromFolder(folder);
+      stringBuffer.writeln("class $className");
       append("class ");
       append(className);
       append("{ \n");
-      List<File> files = folder.listFiles();
+      List<File> files = FileHelpers.listFiles(folder);
       if (files != null) {
-        files.sort((File a, File b) => a.name.compareTo(b.name));
+        files.sort(FileHelpers.compare);
         for (File file in files) {
-          print("Start");
-          print(rootFile.name);
-          print(folder.name);
-          print(file.name);
-          print(file.prepareFiledName());
-          print("Endsadasfa sdfasd sdfas f afsdasdfsadfsdfa");
-          if (!file.isDirectory()) {
+          if (!FileHelpers.isDirectory(file)) {
             append("    final ");
-            append(file.prepareFiledName());
+            append(FileHelpers.prepareFiledName(file: file));
             append(" = \"");
-            append(rootFile.name);
+            append(FileHelpers.getName(rootFile));
             append("/");
-            append(folder.name);
+            append(FileHelpers.getName(folder));
             append("/");
-            append(file.name);
+            append(FileHelpers.getName(file));
             append("\"; \n");
           }
         }
@@ -219,30 +217,13 @@ class ResourceId {
   }
 
   void _finishBuild() {
-    build.writeAsStringSync(bufferedWriter);
+    build.writeAsStringSync(stringBuffer.toString());
 //    build.setReadOnly();
   }
 
   void append(String s) {
-    bufferedWriter += s;
+    stringBuffer.write(s);
   }
-}
-
-extension FileE on File {
-  bool isDirectory() =>
-      FileSystemEntity.typeSync(path) == FileSystemEntityType.directory;
-
-  String get name => this?.absolute?.path?.split("\\")?.last;
-
-  String get classNameFromFolder =>
-      name.substring(0, 1).toUpperCase() + name.substring(1);
-
-  List<File> listFiles() {
-    Directory directory = Directory(this.path);
-    return directory.listSync().map<File>((a) => File(a.path)).toList();
-  }
-
-  String prepareFiledName() => this.name.prepareFiledName();
 }
 
 class Files {
@@ -251,17 +232,5 @@ class Files {
     File b = File(file.parent.absolute.path);
     File c = File(b.parent.absolute.path);
     return File(c.parent.absolute.path + "\\$a");
-  }
-}
-
-extension A on String {
-  String append(String s) => this + s;
-
-  String prepareFiledName() {
-    String name = this;
-    name = name.replaceAll("-", "_");
-    name = name.replaceAll(" ", "_");
-    name = name.replaceAll(".", "_");
-    return name;
   }
 }
