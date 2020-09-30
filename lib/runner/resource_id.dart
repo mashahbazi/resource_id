@@ -23,11 +23,12 @@ class ResourceId {
     return FlutterModel.fromYamlMap(yamlMap);
   }
 
-  StringBuffer stringBuffer;
+  final List<String> createdClass = [];
+  final List<String> reservedFolderNameForIgnore =
+      List.unmodifiable(["2.0x", "3.0x"]);
 
-  File build;
-  List<String> createdClass = [];
-  List<String> reservedFolderNameForIgnore = ["2.0x", "3.0x"];
+  File desFile;
+  StringBuffer defResult;
 
   void _createAssets(String asset) {
     File file = Files.fromPath(asset);
@@ -40,7 +41,7 @@ class ResourceId {
       return;
     }
     String assetParent =
-    StringHelpers.replaceLast(asset, "/" + FileHelpers.getName(file), "");
+        StringHelpers.replaceLast(asset, "/" + FileHelpers.getName(file), "");
     File parentFile = Files.fromPath(assetParent);
     _createDefaultRes(parentFile, file);
   }
@@ -65,13 +66,13 @@ class ResourceId {
   }
 
   bool _createBuildFile() {
-    build = Files.fromPath("build.dart");
-    if (build.existsSync()) {
-      build.delete();
+    desFile = Files.fromPath("build.dart");
+    if (desFile.existsSync()) {
+      desFile.delete();
     }
     try {
-      build.createSync();
-      stringBuffer = new StringBuffer();
+      desFile.createSync();
+      defResult = new StringBuffer();
     } catch (e) {
       print("BUILDER ERROR:Can't create build file\n" + e.getMessage());
       return false;
@@ -148,81 +149,37 @@ class ResourceId {
 //  }
 
   void _createDefaultRes(File rootFile, File folder) {
-    try {
-      String className = "_" + FileHelpers.getClassNameFromFolder(folder);
-      stringBuffer.writeln("class $className");
-      append("class ");
-      append(className);
-      append("{ \n");
-      List<File> files = FileHelpers.listFiles(folder);
-      if (files != null) {
-        files.sort(FileHelpers.compare);
-        for (File file in files) {
-          if (!FileHelpers.isDirectory(file)) {
-            append("    final ");
-            append(FileHelpers.prepareFiledName(file: file));
-            append(" = \"");
-            append(FileHelpers.getName(rootFile));
-            append("/");
-            append(FileHelpers.getName(folder));
-            append("/");
-            append(FileHelpers.getName(file));
-            append("\"; \n");
-          }
+    String className = "_" + FileHelpers.getClassNameFromFolder(folder);
+    defResult.writeln("class $className {");
+    List<File> files = FileHelpers.listFiles(folder);
+    if (files != null) {
+      files.sort(FileHelpers.compare);
+      for (File file in files) {
+        if (!FileHelpers.isDirectory(file)) {
+          defResult
+              .write("final ${FileHelpers.prepareFiledName(file: file)} = ");
+          defResult.writeln(
+              "\" ${FileHelpers.getName(rootFile)}/${FileHelpers.getName(folder)}/${FileHelpers.getName(file)}\";");
         }
       }
-      append("}\n");
-      createdClass.add(className);
-    } catch (e) {
-      print("BUILDER ERROR: error on default res");
-      e.printStackTrace();
     }
+    defResult.writeln("}");
+    createdClass.add(className);
   }
 
   void _createBaseClass() {
-    try {
-      append("class R {\n");
-      for (String aClass in createdClass) {
-        String fieldName = aClass + "field";
-
-        append("     static ");
-        append(aClass);
-        append(" ");
-        append(fieldName);
-        append(" ;\n");
-
-        append("     static ");
-        append(aClass);
-        append(" get ");
-        append(aClass.substring(1));
-        append("{\n");
-
-        append("         if(");
-        append(fieldName);
-        append(" == null) ");
-        append(fieldName);
-        append("=  ");
-        append(aClass);
-        append("();\n");
-
-        append("         return ");
-        append(fieldName);
-        append(";\n");
-        append("     }\n");
-      }
-      append("}");
-    } catch (e) {
-      e.printStackTrace();
+    defResult.writeln("class R {");
+    for (String aClass in createdClass) {
+      String fieldName = aClass + "Field";
+      defResult.writeln("static $aClass $fieldName ;");
+      defResult.writeln(
+          "static $aClass get ${aClass.substring(1)} => $fieldName ?? ($fieldName = ${aClass}());");
     }
+    defResult.writeln("}");
   }
 
   void _finishBuild() {
-    build.writeAsStringSync(stringBuffer.toString());
-//    build.setReadOnly();
-  }
-
-  void append(String s) {
-    stringBuffer.write(s);
+    desFile.writeAsString(defResult.toString());
   }
 }
 
