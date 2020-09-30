@@ -3,4 +3,7 @@ class StringHelpers {
     return text.replaceFirst(
         "(?s)" + regex + "(?!.*?" + regex + ")", replacement);
   }
+
+  static prepareName(String name) =>
+      name.replaceAll("-", "_").replaceAll(" ", "_").replaceAll(".", "_");
 }

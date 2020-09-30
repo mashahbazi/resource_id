@@ -13,7 +13,7 @@ class ResourceId {
 
   void _run() {
     FlutterModel flutterModel = _readPubspecFile();
-    _start();
+    _start(flutterModel);
   }
 
   FlutterModel _readPubspecFile() {
@@ -30,37 +30,14 @@ class ResourceId {
   File desFile;
   StringBuffer defResult;
 
-  void _createAssets(String asset) {
-    File file = Files.fromPath(asset);
-    if (!file.existsSync()) {
-      print("File or folder with directory " + asset + " doesn't exist");
-      return;
-    }
-    if (!FileHelpers.isDirectory(file)) {
-      print("path " + asset + " is file which is not support yet");
-      return;
-    }
-    String assetParent =
-        StringHelpers.replaceLast(asset, "/" + FileHelpers.getName(file), "");
-    File parentFile = Files.fromPath(assetParent);
-    _createDefaultRes(parentFile, file);
-  }
-
-  void _start() {
+  void _start(FlutterModel flutterModel) {
     bool createResult = _createBuildFile();
     if (!createResult) return;
-    File rootFile = Files.fromPath("assets");
-    List<File> files = FileHelpers.listFiles(rootFile);
-    if (files == null) {
-      print("there is not assets folder");
-      return;
+
+    for (String filePath in flutterModel.assets) {
+      _createAssets(filePath);
     }
-    files.sort(FileHelpers.compare);
-    for (File file in files) {
-      if (FileHelpers.isDirectory(file)) {
-        _checkFolders(rootFile, file);
-      }
-    }
+    _createFontsClass(flutterModel.fonts);
     _createBaseClass();
     _finishBuild();
   }
@@ -80,27 +57,52 @@ class ResourceId {
     return true;
   }
 
-  void _checkFolders(File rootFile, File folder) {
-    _createDefaultRes(rootFile, folder);
+  void _createAssets(String assetPath) {
+    Directory folder = Directories.fromPath(assetPath);
+    if (!folder.existsSync()) {
+      File file = Files.fromPath(assetPath);
+      if (!FileHelpers.isDirectory(file)) {
+        print("path " + assetPath + " is file which is not support yet");
+      } else {
+        print("File or folder with directory " + assetPath + " doesn't exist");
+      }
+      return;
+    }
+    String assetParent = StringHelpers.replaceLast(
+        assetPath, "/" + FileHelpers.getName(folder), "");
+    Directory parentFolder = Directories.fromPath(assetParent);
+    _createDefaultRes(parentFolder, folder);
   }
 
-  void _createDefaultRes(File rootFile, File folder) {
+  void _createDefaultRes(Directory rootFolder, Directory folder) {
     String className = "_" + FileHelpers.getClassNameFromFolder(folder);
     defResult.writeln("class $className {");
-    List<File> files = FileHelpers.listFiles(folder);
-    if (files != null) {
-      files.sort(FileHelpers.compare);
-      for (File file in files) {
-        if (!FileHelpers.isDirectory(file)) {
-          defResult
-              .write("final ${FileHelpers.prepareFiledName(file: file)} = ");
-          defResult.writeln(
-              "\" ${FileHelpers.getName(rootFile)}/${FileHelpers.getName(folder)}/${FileHelpers.getName(file)}\";");
-        }
+    List<FileSystemEntity> fileSystemEntities = FileHelpers.listFiles(folder);
+    fileSystemEntities?.sort(FileHelpers.compare);
+
+    for (FileSystemEntity fileSystemEntity in fileSystemEntities) {
+      if (!FileHelpers.isDirectory(fileSystemEntity)) {
+        defResult.write(
+            "final ${FileHelpers.prepareFiledName(fileSystemEntity)} = ");
+        defResult.writeln(
+            "\" ${FileHelpers.getName(rootFolder)}/${FileHelpers.getName(folder)}/${FileHelpers.getName(fileSystemEntity)}\";");
       }
     }
     defResult.writeln("}");
     createdClass.add(className);
+  }
+
+  void _createFontsClass(List<String> fontNames) {
+    if (fontNames.isNotEmpty) {
+      String className = "_Fonts";
+      defResult.writeln("class $className {");
+      for (String fontName in fontNames) {
+        defResult.writeln(
+            "final ${StringHelpers.prepareName(fontName)} = $fontName;");
+      }
+      defResult.writeln("}");
+      createdClass.add(className);
+    }
   }
 
   void _createBaseClass() {
@@ -125,5 +127,14 @@ class Files {
     File b = File(file.parent.absolute.path);
     File c = File(b.parent.absolute.path);
     return File(c.parent.absolute.path + "\\$a");
+  }
+}
+
+class Directories {
+  static Directory fromPath(String a) {
+    File file = File(a);
+    File b = File(file.parent.absolute.path);
+    File c = File(b.parent.absolute.path);
+    return Directory(c.parent.absolute.path + "\\$a");
   }
 }
