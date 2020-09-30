@@ -82,71 +82,7 @@ class ResourceId {
 
   void _checkFolders(File rootFile, File folder) {
     _createDefaultRes(rootFile, folder);
-//    if (folder.name == "translations") _generateTranslation(folder);
   }
-
-  // TODO : add translations
-//  void _generateTranslation(File folder) {
-//    File jsonFile = null;
-//    for (File file in folder.listFiles() ?? []) {
-//      if (file.name.substring(file.name.lastIndexOf(".")) == ".json") {
-//        jsonFile = file;
-//        break;
-//      }
-//    }
-//    if (jsonFile == null) return;
-//    try {
-//      String bufferedReader = "";
-//      String stringBuilder =  StringBuilder();
-//      bufferedReader.lines().forEach(stringBuilder::append);
-//      bufferedReader.close();
-//      String jsonStr = stringBuilder.toString();
-//      try {
-//        Map<String, String> pairs =  Gson().fromJson(jsonStr, Map.class);
-//        String className = "_Strings";
-//        createdClass.add(className);
-//        bufferedWriter
-//            ;append("class ")
-//            ;append(className)
-//            ;append(" {\n");
-//        for (String s : pairs.keySet()) {
-//    if (prepareStringFieldNames(s).equals("Something_unexpected_happened_Try_restarting_the_app_"))
-//    print(s);
-//    bufferedWriter
-//        ;append("     final ")
-//        ;append(prepareStringFieldNames(s))
-//        ;append(" = \"");
-//    if (s.contains("\n")) {
-//    int indexOfBreak = s.indexOf("\n");
-//    bufferedWriter
-//        ;append(s.substring(0, indexOfBreak))
-//        ;append("\"+");
-//    bufferedWriter
-//        ;append("\"\\n\"+");
-//    bufferedWriter
-//        ;append("\"")
-//        ;append(s.substring(indexOfBreak + 1));
-//    } else {
-//    bufferedWriter
-//        ;append(s);
-//    }
-//    bufferedWriter
-//        ;append("\" ;\n");
-//    }
-//    bufferedWriter
-//        ;append("}\n");
-//    } catch (JsonSyntaxException s) {
-//    s.printStackTrace();
-//    }
-//    } catch (IOException e) {
-//    e.printStackTrace();
-//    }
-//  }//  prepareStringFieldNames(String name) {
-//    name = name.replaceAll("[^A-Za-z0-9]", "_");
-//    while (Character.isDigit(name.charAt(0)))
-//      name = name.substring(1);
-//    return name;
-//  }
 
   void _createDefaultRes(File rootFile, File folder) {
     String className = "_" + FileHelpers.getClassNameFromFolder(folder);
