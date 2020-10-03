@@ -1,4 +1,3 @@
-import 'package:resource_id/helpers/Utils.dart';
 import 'package:yaml/yaml.dart';
 
 class FlutterModel {
@@ -13,7 +12,17 @@ class FlutterModel {
     }
   }
 
+  static List<String> toListString(dynamic list) {
+    if (list is List<dynamic> && list != null) {
+      return List<String>.from(list.map((item) {
+        return item.toString();
+      }));
+    } else {
+      return [];
+    }
+  }
+
   FlutterModel.fromYamlMap(YamlMap yamlMap)
-      : this.assets = Utils.yamlMapToListString(yamlMap["flutter"]["assets"]),
+      : this.assets = toListString(yamlMap["flutter"]["assets"]),
         this.fonts = toListFonts(yamlMap["flutter"]["fonts"]);
 }

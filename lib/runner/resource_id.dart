@@ -45,7 +45,15 @@ class ResourceId {
   }
 
   bool _createBuildFile() {
-    desFile = File("build.dart");
+    Directory lib = Directory("lib");
+    if (!lib.existsSync()) {
+      lib.createSync();
+    }
+    Directory build = Directory("lib/build");
+    if (!build.existsSync()) {
+      build.createSync();
+    }
+    desFile = File("lib/build/build.dart");
     if (desFile.existsSync()) {
       desFile.delete();
     }
@@ -54,7 +62,11 @@ class ResourceId {
       desResult = new StringBuffer(
           "// ignore_for_file: non_constant_identifier_names\n");
     } catch (e) {
-      print("BUILDER ERROR:Can't create build file\n" + e.getMessage());
+      String errorMessage = "BUILDER ERROR:Can't create build file\n";
+      if (e is FileSystemException) {
+        errorMessage += e.message;
+      }
+      print(errorMessage);
       return false;
     }
     return true;

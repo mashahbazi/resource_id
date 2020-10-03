@@ -4,7 +4,7 @@ builders:
     builder_factories: ["resourceId"]
     auto_apply: dependents
     build_extensions:
-      .txt: [".dart"]
+      main.dart: ["."]
     applies_builders:
       - resource_id|
     defaults:

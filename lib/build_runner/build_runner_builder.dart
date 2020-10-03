@@ -19,8 +19,8 @@ class ResourceIdBuilder extends Builder {
   @override
   Map<String, List<String>> get buildExtensions {
     return {
-      ".txt": [
-        ".dart",
+      "main.dart": [
+        ".",
       ]
     };
   }
