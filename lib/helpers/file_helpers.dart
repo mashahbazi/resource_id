@@ -26,4 +26,9 @@ class FileHelpers {
   static int compare(FileSystemEntity a, FileSystemEntity b) {
     return getName(a).compareTo(getName(b));
   }
+
+  static String getSrcLineOfFileSystem(
+      FileSystemEntity fileSystemEntity, String parentPath) {
+    return "final String ${FileHelpers.prepareFiledName(fileSystemEntity)} = \"${parentPath}/${FileHelpers.getName(fileSystemEntity)}/${FileHelpers.getName(fileSystemEntity)}\";";
+  }
 }

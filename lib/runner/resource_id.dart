@@ -24,11 +24,12 @@ class ResourceId {
   }
 
   final List<String> createdClass = [];
+  final List<String> singleFilesPath = [];
   final List<String> reservedFolderNameForIgnore =
       List.unmodifiable(["2.0x", "3.0x"]);
 
   File desFile;
-  StringBuffer defResult;
+  StringBuffer desResult;
 
   void _start(FlutterModel flutterModel) {
     bool createResult = _createBuildFile();
@@ -38,6 +39,7 @@ class ResourceId {
       _createAssets(filePath);
     }
     _createFontsClass(flutterModel.fonts);
+    _createSingleFiles(singleFilesPath);
     _createBaseClass();
     _finishBuild();
   }
@@ -49,8 +51,8 @@ class ResourceId {
     }
     try {
       desFile.createSync();
-      defResult =
-          new StringBuffer("// ignore_for_file: non_constant_identifier_names\n");
+      desResult = new StringBuffer(
+          "// ignore_for_file: non_constant_identifier_names\n");
     } catch (e) {
       print("BUILDER ERROR:Can't create build file\n" + e.getMessage());
       return false;
@@ -63,7 +65,7 @@ class ResourceId {
     if (!folder.existsSync()) {
       File file = Files.fromPath(assetPath);
       if (!FileHelpers.isDirectory(file)) {
-        print("path " + assetPath + " is file which is not support yet");
+        singleFilesPath.add(assetPath);
       } else {
         print("File or folder with directory " + assetPath + " doesn't exist");
       }
@@ -77,48 +79,59 @@ class ResourceId {
 
   void _createDefaultRes(Directory rootFolder, Directory folder) {
     String className = "_" + FileHelpers.getClassNameFromFolder(folder);
-    defResult.writeln("class $className {");
+    desResult.writeln("class $className {");
     List<FileSystemEntity> fileSystemEntities = FileHelpers.listFiles(folder);
     fileSystemEntities?.sort(FileHelpers.compare);
 
     for (FileSystemEntity fileSystemEntity in fileSystemEntities) {
       if (!FileHelpers.isDirectory(fileSystemEntity)) {
-        defResult.write(
-            "final String ${FileHelpers.prepareFiledName(fileSystemEntity)} = ");
-        defResult.writeln(
-            "\" ${FileHelpers.getName(rootFolder)}/${FileHelpers.getName(folder)}/${FileHelpers.getName(fileSystemEntity)}\";");
+        desResult.writeln(FileHelpers.getSrcLineOfFileSystem(
+            fileSystemEntity, FileHelpers.getName(rootFolder)));
       }
     }
-    defResult.writeln("}");
+    desResult.writeln("}");
     createdClass.add(className);
   }
 
   void _createFontsClass(List<String> fontNames) {
     if (fontNames.isNotEmpty) {
       String className = "_Fonts";
-      defResult.writeln("class $className {");
+      desResult.writeln("class $className {");
       for (String fontName in fontNames) {
-        defResult.writeln(
+        desResult.writeln(
             "final String ${StringHelpers.prepareName(fontName)} = \"$fontName\";");
       }
-      defResult.writeln("}");
+      desResult.writeln("}");
+      createdClass.add(className);
+    }
+  }
+
+  void _createSingleFiles(List<String> singleFilesPath) {
+    if (singleFilesPath.isNotEmpty) {
+      String className = "_SingleFile";
+      desResult.writeln("class $className {");
+      for (String singleFile in singleFilesPath) {
+        desResult.writeln(
+            "final String ${FileHelpers.getName(File(singleFile))} = \"$singleFile\";");
+      }
+      desResult.writeln("}");
       createdClass.add(className);
     }
   }
 
   void _createBaseClass() {
-    defResult.writeln("class R {");
+    desResult.writeln("class R {");
     for (String aClass in createdClass) {
       String fieldName = aClass + "Field";
-      defResult.writeln("static $aClass $fieldName ;");
-      defResult.writeln(
+      desResult.writeln("static $aClass $fieldName ;");
+      desResult.writeln(
           "static $aClass get ${aClass.substring(1)} => $fieldName ?? ($fieldName = ${aClass}());");
     }
-    defResult.writeln("}");
+    desResult.writeln("}");
   }
 
   void _finishBuild() {
-    desFile.writeAsString(defResult.toString());
+    desFile.writeAsString(desResult.toString());
   }
 }
 
