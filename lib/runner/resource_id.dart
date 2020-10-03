@@ -17,7 +17,7 @@ class ResourceId {
   }
 
   FlutterModel _readPubspecFile() {
-    File pubspec = File("../pubspec.yaml");
+    File pubspec = File("pubspec.yaml");
     String yaml = pubspec.readAsStringSync();
     YamlMap yamlMap = loadYaml(yaml);
     return FlutterModel.fromYamlMap(yamlMap);
@@ -122,19 +122,13 @@ class ResourceId {
 }
 
 class Files {
-  static File fromPath(String a) {
-    File file = File(a);
-    File b = File(file.parent.absolute.path);
-    File c = File(b.parent.absolute.path);
-    return File(c.parent.absolute.path + "\\$a");
+  static File fromPath(String path) {
+    return File(path);
   }
 }
 
 class Directories {
-  static Directory fromPath(String a) {
-    File file = File(a);
-    File b = File(file.parent.absolute.path);
-    File c = File(b.parent.absolute.path);
-    return Directory(c.parent.absolute.path + "\\$a");
+  static Directory fromPath(String path) {
+    return Directory(path);
   }
 }
