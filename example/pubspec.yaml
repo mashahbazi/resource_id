@@ -32,10 +32,6 @@ dev_dependencies:
     path: ../../resource_id
   build_runner: ^1.7.1
 
-dependency_overrides:
-  analyzer: 0.39.11
-
-
 flutter:
   uses-material-design: true
   assets:

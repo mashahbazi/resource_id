@@ -6,7 +6,7 @@ import 'package:resource_id/models/flutter_model.dart';
 import 'package:yaml/yaml.dart';
 
 class ResourceId {
-  static Future<void> run() async {
+  static void run() {
     ResourceId resourceId = ResourceId();
     resourceId._run();
   }
