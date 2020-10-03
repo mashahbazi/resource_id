@@ -45,7 +45,7 @@ class ResourceId {
   }
 
   bool _createBuildFile() {
-    desFile = Files.fromPath("build.dart");
+    desFile = File("build.dart");
     if (desFile.existsSync()) {
       desFile.delete();
     }
@@ -61,9 +61,9 @@ class ResourceId {
   }
 
   void _createAssets(String assetPath) {
-    Directory folder = Directories.fromPath(assetPath);
+    Directory folder = Directory(assetPath);
     if (!folder.existsSync()) {
-      File file = Files.fromPath(assetPath);
+      File file = File(assetPath);
       if (!FileHelpers.isDirectory(file)) {
         singleFilesPath.add(assetPath);
       } else {
@@ -73,7 +73,7 @@ class ResourceId {
     }
     String assetParent = StringHelpers.replaceLast(
         assetPath, "/" + FileHelpers.getName(folder), "");
-    Directory parentFolder = Directories.fromPath(assetParent);
+    Directory parentFolder = Directory(assetParent);
     _createDefaultRes(parentFolder, folder);
   }
 
@@ -132,17 +132,5 @@ class ResourceId {
 
   void _finishBuild() {
     desFile.writeAsString(desResult.toString());
-  }
-}
-
-class Files {
-  static File fromPath(String path) {
-    return File(path);
-  }
-}
-
-class Directories {
-  static Directory fromPath(String path) {
-    return Directory(path);
   }
 }
