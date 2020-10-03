@@ -29,6 +29,6 @@ class FileHelpers {
 
   static String getSrcLineOfFileSystem(
       FileSystemEntity fileSystemEntity, String parentPath) {
-    return "final String ${FileHelpers.prepareFiledName(fileSystemEntity)} = \"${parentPath}/${FileHelpers.getName(fileSystemEntity)}/${FileHelpers.getName(fileSystemEntity)}\";";
+    return "final String ${FileHelpers.prepareFiledName(fileSystemEntity)} = \"${parentPath}${FileHelpers.getName(fileSystemEntity)}\";";
   }
 }

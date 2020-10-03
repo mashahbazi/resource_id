@@ -83,10 +83,7 @@ class ResourceId {
       }
       return;
     }
-    String assetParent = StringHelpers.replaceLast(
-        assetPath, "/" + FileHelpers.getName(folder), "");
-    Directory parentFolder = Directory(assetParent);
-    _createDefaultRes(parentFolder, folder);
+    _createDefaultRes(folder.parent, folder);
   }
 
   void _createDefaultRes(Directory rootFolder, Directory folder) {
@@ -97,8 +94,8 @@ class ResourceId {
 
     for (FileSystemEntity fileSystemEntity in fileSystemEntities) {
       if (!FileHelpers.isDirectory(fileSystemEntity)) {
-        desResult.writeln(FileHelpers.getSrcLineOfFileSystem(
-            fileSystemEntity, FileHelpers.getName(rootFolder)));
+        desResult.writeln(
+            FileHelpers.getSrcLineOfFileSystem(fileSystemEntity, folder.path));
       }
     }
     desResult.writeln("}");
