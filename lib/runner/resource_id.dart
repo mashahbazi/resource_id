@@ -49,7 +49,8 @@ class ResourceId {
     }
     try {
       desFile.createSync();
-      defResult = new StringBuffer();
+      defResult =
+          new StringBuffer("// ignore_for_file: non_constant_identifier_names\n");
     } catch (e) {
       print("BUILDER ERROR:Can't create build file\n" + e.getMessage());
       return false;
@@ -83,7 +84,7 @@ class ResourceId {
     for (FileSystemEntity fileSystemEntity in fileSystemEntities) {
       if (!FileHelpers.isDirectory(fileSystemEntity)) {
         defResult.write(
-            "final ${FileHelpers.prepareFiledName(fileSystemEntity)} = ");
+            "final String ${FileHelpers.prepareFiledName(fileSystemEntity)} = ");
         defResult.writeln(
             "\" ${FileHelpers.getName(rootFolder)}/${FileHelpers.getName(folder)}/${FileHelpers.getName(fileSystemEntity)}\";");
       }
@@ -98,7 +99,7 @@ class ResourceId {
       defResult.writeln("class $className {");
       for (String fontName in fontNames) {
         defResult.writeln(
-            "final ${StringHelpers.prepareName(fontName)} = $fontName;");
+            "final String ${StringHelpers.prepareName(fontName)} = \"$fontName\";");
       }
       defResult.writeln("}");
       createdClass.add(className);
